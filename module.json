@@ -4,12 +4,12 @@
   "description": "Aplica níveis de fadiga progressivos (1 a 5) quando os personagens perdem HP. A cura não remove a fadiga.",
   "version": "1.0.0",
   "compatibility": {
-    "minimum": "11",
-    "verified": "12"
+    "minimum": "12",
+    "verified": "13"
   },
   "authors": [
     {
-      "name": "KaDx"
+      "name": "Seu Nome"
     }
   ],
   "esmodules": [
@@ -18,7 +18,10 @@
   "systems": [
     {
       "id": "dnd5e",
-      "type": "system"
+      "type": "system",
+      "compatibility": {
+        "verified": "5.3.3"
+      }
     }
   ]
 }
