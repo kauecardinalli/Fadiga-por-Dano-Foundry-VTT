@@ -8,8 +8,8 @@ Hooks.once("init", () => {
     game.settings.register("fadiga-por-dano", "moduloAtivo", {
         name: "Ativar Punição de Fadiga",
         hint: "Ativa ou desativa as regras deste módulo para todo o mundo.",
-        scope: "world", // 'world' significa que só o Mestre pode alterar e afeta todos
-        config: true,   // 'true' faz aparecer no menu de opções visualmente
+        scope: "world",
+        config: true,
         type: Boolean,
         default: true
     });
@@ -131,8 +131,7 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
         const conteudoChat = `
             <div class="dnd5e chat-card item-card">
                 <header class="card-header flexrow">
-                    <img src="${actor.img}" title="${actor.name}" width="36" height="36" style="border: none; border-radius: 4px;"/>
-                    <h3 class="item-name" style="color: #8a1f1f;">Fadiga por Ferimento Grave!</h3>
+                    <h3 class="item-name" style="color: #8a1f1f; margin: 0;">Fadiga por Ferimento Grave!</h3>
                 </header>
                 <div class="card-content" style="margin-top: 8px; font-size: 13px;">
                     <p>O nível de exaustão de <strong>${actor.name}</strong> subiu para <strong>${novaFadiga}</strong> devido aos danos sofridos.</p>
