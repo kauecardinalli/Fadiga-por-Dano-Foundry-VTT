@@ -1,12 +1,82 @@
+// -----------------------------------------------------------------------
+// 1. REGISTRO DAS CONFIGURAÇÕES NO MENU DO FOUNDRY
+// -----------------------------------------------------------------------
+Hooks.once("init", () => {
+    console.log("Fadiga por Dano | Inicializando módulo e registrando configurações...");
+
+    // Chave geral Liga/Desliga
+    game.settings.register("fadiga-por-dano", "moduloAtivo", {
+        name: "Ativar Punição de Fadiga",
+        hint: "Ativa ou desativa as regras deste módulo para todo o mundo.",
+        scope: "world", // 'world' significa que só o Mestre pode alterar e afeta todos
+        config: true,   // 'true' faz aparecer no menu de opções visualmente
+        type: Boolean,
+        default: true
+    });
+
+    // Porcentagem para o Nível 1
+    game.settings.register("fadiga-por-dano", "limiteNivel1", {
+        name: "Fadiga Nível 1 (%)",
+        hint: "Abaixo desta porcentagem de HP, o personagem ganha Nível 1 de Fadiga.",
+        scope: "world",
+        config: true,
+        type: Number,
+        default: 80
+    });
+
+    // Porcentagem para o Nível 2
+    game.settings.register("fadiga-por-dano", "limiteNivel2", {
+        name: "Fadiga Nível 2 (%)",
+        hint: "Abaixo desta porcentagem de HP, o personagem ganha Nível 2 de Fadiga.",
+        scope: "world",
+        config: true,
+        type: Number,
+        default: 64
+    });
+
+    // Porcentagem para o Nível 3
+    game.settings.register("fadiga-por-dano", "limiteNivel3", {
+        name: "Fadiga Nível 3 (%)",
+        hint: "Abaixo desta porcentagem de HP, o personagem ganha Nível 3 de Fadiga.",
+        scope: "world",
+        config: true,
+        type: Number,
+        default: 30
+    });
+
+    // Porcentagem para o Nível 4
+    game.settings.register("fadiga-por-dano", "limiteNivel4", {
+        name: "Fadiga Nível 4 (%)",
+        hint: "Abaixo desta porcentagem de HP, o personagem ganha Nível 4 de Fadiga.",
+        scope: "world",
+        config: true,
+        type: Number,
+        default: 19
+    });
+
+    // Porcentagem para o Nível 5
+    game.settings.register("fadiga-por-dano", "limiteNivel5", {
+        name: "Fadiga Nível 5 (%)",
+        hint: "Abaixo desta porcentagem de HP, o personagem ganha Nível 5 de Fadiga.",
+        scope: "world",
+        config: true,
+        type: Number,
+        default: 9
+    });
+});
+
+// -----------------------------------------------------------------------
+// 2. LÓGICA DE DANO E APLICAÇÃO DE FADIGA
+// -----------------------------------------------------------------------
 Hooks.on("updateActor", async (actor, changes, options, userId) => {
-    // 1. Apenas o usuário que disparou a alteração (ou o Mestre) processa o código
+    // Verifica se o módulo está ligado no painel do mestre
+    if (!game.settings.get("fadiga-por-dano", "moduloAtivo")) return;
+
     if (game.user.id !== userId) return;
 
-    // 2. Verifica se houve alteração nos Pontos de Vida (HP)
     const novoHP = changes?.system?.attributes?.hp?.value;
     if (novoHP === undefined) return;
 
-    // 3. Aplica apenas aos personagens dos jogadores (ignora monstros/NPCs)
     if (actor.type !== "character") return;
 
     const maxHP = actor.system.attributes.hp.max;
@@ -14,63 +84,50 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
 
     const hpAtual = novoHP;
     const fadigaAtual = actor.system.attributes.exhaustion || 0;
-
-    // 4. Calcula a porcentagem de vida restante
     const porcentagem = Math.round((hpAtual / maxHP) * 100);
+
+    // Busca os valores atuais definidos pelo Mestre no painel de configurações
+    const lim1 = game.settings.get("fadiga-por-dano", "limiteNivel1");
+    const lim2 = game.settings.get("fadiga-por-dano", "limiteNivel2");
+    const lim3 = game.settings.get("fadiga-por-dano", "limiteNivel3");
+    const lim4 = game.settings.get("fadiga-por-dano", "limiteNivel4");
+    const lim5 = game.settings.get("fadiga-por-dano", "limiteNivel5");
 
     let fadigaAlvo = 0;
 
-    // 5. Tabela de regras de exaustão
-    if (porcentagem <= 9) {
+    // A tabela de regras agora obedece aos limites flexíveis
+    if (porcentagem <= lim5) {
         fadigaAlvo = 5;
-    } else if (porcentagem <= 19) {
+    } else if (porcentagem <= lim4) {
         fadigaAlvo = 4;
-    } else if (porcentagem <= 30) {
+    } else if (porcentagem <= lim3) {
         fadigaAlvo = 3;
-    } else if (porcentagem <= 64) {
+    } else if (porcentagem <= lim2) {
         fadigaAlvo = 2;
-    } else if (porcentagem <= 80) {
+    } else if (porcentagem <= lim1) {
         fadigaAlvo = 1;
     }
 
-    // A cura não remove a fadiga, mantém-se o maior valor
     const novaFadiga = Math.max(fadigaAtual, fadigaAlvo);
 
-    // 6. Se a fadiga tiver que aumentar, atualizamos e enviamos o aviso
     if (novaFadiga > fadigaAtual) {
         await actor.update({ "system.attributes.exhaustion": novaFadiga });
         
-        // Alerta flutuante na tela (UI)
         ui.notifications.warn(`Alerta de Ferimento: ${actor.name} recebeu o Nível ${novaFadiga} de Fadiga!`);
 
-        // 7. Define o texto do efeito baseado no nível atingido
         let efeitoTexto = "";
         switch (novaFadiga) {
-            case 1:
-                efeitoTexto = "<strong>Nível 1:</strong> Desvantagem em todos os testes de Habilidade.";
-                break;
-            case 2:
-                efeitoTexto = "<strong>Nível 2:</strong> Deslocamento reduzido pela metade.";
-                break;
-            case 3:
-                efeitoTexto = "<strong>Nível 3:</strong> Desvantagem nas jogadas de Ataque e testes de Resistência.";
-                break;
-            case 4:
-                efeitoTexto = "<strong>Nível 4:</strong> Pontos de Vida (HP) máximos reduzidos pela metade.";
-                break;
-            case 5:
-                efeitoTexto = "<strong>Nível 5:</strong> Deslocamento reduzido a zero (personagem fica prostrado).";
-                break;
+            case 1: efeitoTexto = "<strong>Nível 1:</strong> Desvantagem em todos os testes de Habilidade."; break;
+            case 2: efeitoTexto = "<strong>Nível 2:</strong> Deslocamento reduzido pela metade."; break;
+            case 3: efeitoTexto = "<strong>Nível 3:</strong> Desvantagem nas jogadas de Ataque e testes de Resistência."; break;
+            case 4: efeitoTexto = "<strong>Nível 4:</strong> Pontos de Vida (HP) máximos reduzidos pela metade."; break;
+            case 5: efeitoTexto = "<strong>Nível 5:</strong> Deslocamento reduzido a zero (personagem fica prostrado)."; break;
         }
 
-        // 8. Identifica quem são os donos da ficha (jogadores) e os Mestres (GMs)
-        const donos DoActor = game.users.filter(u => actor.testUserPermission(u, "OWNER")).map(u => u.id);
+        const donosDoActor = game.users.filter(u => actor.testUserPermission(u, "OWNER")).map(u => u.id);
         const mestres = game.users.filter(u => u.isGM).map(u => u.id);
-        
-        // Junta todos em uma lista única de alvos para o sussurro (evitando duplicatas)
         const alvosSussurro = [...new Set([...donosDoActor, ...mestres])];
 
-        // 9. Monta o visual da mensagem de chat usando os estilos nativos do D&D 5e
         const conteudoChat = `
             <div class="dnd5e chat-card item-card">
                 <header class="card-header flexrow">
@@ -90,7 +147,6 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
             </div>
         `;
 
-        // 10. Cria e envia a mensagem de chat oculta
         await ChatMessage.create({
             content: conteudoChat,
             whisper: alvosSussurro,
