@@ -1,0 +1,24 @@
+{
+  "id": "punicao-por-dano",
+  "title": "Fadiga por Perda de Vida",
+  "description": "Aplica níveis de fadiga progressivos (1 a 5) quando os personagens perdem HP. A cura não remove a fadiga.",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "11",
+    "verified": "12"
+  },
+  "authors": [
+    {
+      "name": "KaDx"
+    }
+  ],
+  "esmodules": [
+    "main.js"
+  ],
+  "systems": [
+    {
+      "id": "dnd5e",
+      "type": "system"
+    }
+  ]
+}
