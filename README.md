@@ -21,5 +21,26 @@ Para instalar este módulo no seu mundo do Foundry VTT, siga os passos abaixo us
 4. Role a janela até o final para encontrar o campo **URL de Manifesto** (Manifest URL).
 5. Cole o link abaixo:
    
-   ```text
-   [https://raw.githubusercontent.com/kauecardinalli/Fadiga-por-Dano-Foundry-VTT/main/module.json](https://raw.githubusercontent.com/kauecardinalli/Fadiga-por-Dano-Foundry-VTT/main/module.json)
+https://raw.githubusercontent.com/kauecardinalli/Fadiga-por-Dano-Foundry-VTT/main/module.json
+
+_________________________________________________
+
+📜 Regras Padrão de Punição
+Por padrão, os níveis de exaustão são aplicados de forma cumulativa com base na seguinte tabela de HP restante (estes valores podem ser alterados pelo Mestre nas configurações do módulo):
+
+80% de HP ou menos (Nível 1): Desvantagem em todos os testes de Habilidade.
+
+64% de HP ou menos (Nível 2): Deslocamento reduzido pela metade.
+
+30% de HP ou menos (Nível 3): Desvantagem nas jogadas de Ataque e testes de Resistência.
+
+19% de HP ou menos (Nível 4): Pontos de Vida (HP) máximos reduzidos pela metade.
+
+9% de HP ou menos (Nível 5): Deslocamento reduzido a zero (personagem fica prostrado).
+
+🛠️ Compatibilidade
+Foundry VTT: Versão 12 ou superior (Verificado na v13).
+
+Sistema: Dungeons & Dragons Fifth Edition (v5.3.3+).
+
+Desenvolvido por Kauê Cardinalli
