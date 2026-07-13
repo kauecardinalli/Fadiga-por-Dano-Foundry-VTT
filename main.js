@@ -122,13 +122,15 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
         listaEfeitos += "</ul>";
 
         // -------------------------------------------------------------------
-        // 3. INTEGRAÇÃO COM A FICHA DO JOGADOR (Criação de Item Informativo)
+        // 3. INTEGRAÇÃO COM A FICHA DO JOGADOR (Criação de Efeito Ativo)
         // -------------------------------------------------------------------
-        const nomeItemFadiga = "Condição: Ferimento Grave";
-        let itemFadiga = actor.items.find(i => i.name === nomeItemFadiga);
+        const nomeEfeitoFadiga = "Condição: Ferimento Grave";
         
-        // O texto limpo e formatado que vai ficar dentro do item na ficha
-        const descricaoItem = `
+        // Em Foundry V11 e V12, o nome do efeito fica na propriedade 'name'
+        let efeitoFadiga = actor.effects.find(e => e.name === nomeEfeitoFadiga);
+        
+        // O texto formatado que vai ficar dentro da descrição do efeito
+        const descricaoEfeito = `
             <p>Seu personagem sofreu ferimentos graves. Atualmente você está com <strong>Fadiga Nível ${novaFadiga}</strong>.</p>
             <p>Você sofre as seguintes penalidades cumulativas:</p>
             ${listaEfeitos}
@@ -136,19 +138,17 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
             <p><em>Nota: Esta condição só poderá ser reduzida através de um Descanso Longo. Curas mágicas ou poções restauram Pontos de Vida, mas não removem esta exaustão.</em></p>
         `;
 
-        if (itemFadiga) {
-            // Se o item já existir na ficha, apenas atualiza o texto dele
-            await itemFadiga.update({ "system.description.value": descricaoItem });
+        if (efeitoFadiga) {
+            // Se o efeito já existir, apenas atualiza a descrição com o novo texto
+            await efeitoFadiga.update({ description: descricaoEfeito });
         } else {
-            // Se não existir, cria o item silenciosamente na aba "Características"
-            await actor.createEmbeddedDocuments("Item", [{
-                name: nomeItemFadiga,
-                type: "feat", // Tipo "Característica" para o 5e
-                img: "icons/skills/wounds/blood-drip-droplet-red.webp", // Um ícone de sangue padrão do Foundry
-                system: {
-                    description: { value: descricaoItem },
-                    activation: { type: "none" }
-                }
+            // Se não existir, cria o efeito na aba de "Efeitos" (Effects)
+            await actor.createEmbeddedDocuments("ActiveEffect", [{
+                name: nomeEfeitoFadiga,
+                icon: "icons/skills/wounds/blood-drip-droplet-red.webp", // Ícone de sangue
+                description: descricaoEfeito,
+                origin: actor.uuid,
+                disabled: false // Garante que o efeito apareça como ativo/passivo
             }]);
         }
 
@@ -171,7 +171,7 @@ Hooks.on("updateActor", async (actor, changes, options, userId) => {
                         ${listaEfeitos}
                     </div>
                     <span style="font-size: 10px; color: #666; display: block; margin-top: 8px; font-style: italic;">
-                        *Um resumo desta condição foi adicionado à aba de Características da sua ficha.
+                        *Um resumo desta condição foi adicionado à aba de <strong>Efeitos</strong> da sua ficha.
                     </span>
                 </div>
             </div>
